@@ -1,4 +1,5 @@
 # Conexão com o Azure
+Write-Output " Iniciando conexão com o Azure"
 $cred = "AzureRunAsConnection"
 	try
 {
@@ -49,6 +50,7 @@ $cred = "AzureRunAsConnection"
 
 }
 
+        Write-Output " Configurações de Variaveis Globais"
         ################# Variaveis Globais ################
         $ResourceGroupName_IB = "RG-IB-NTW-BS-001"
         $ResourceGroupName_SC = "RG-SC-NTW-BS-001"
@@ -83,13 +85,12 @@ $cred = "AzureRunAsConnection"
         $RT_TRAFFIC_TO_SC_DB = "Traffic-To-SC-DB"
         $RT_PREFIX_TRAFFIC_TO_SC_DB = "10.210.1.128/25"
 
-      
-       
         # Tabela de Rotas SERVICES DATASUL
         $RT_DS_APP_BS = Get-azurermroutetable -ResourceGroupName "$ResourceGroupName_DS" -Name $RT_DS_APP_TableName
         $RT_DS_DB_BS = Get-azurermroutetable -ResourceGroupName "$ResourceGroupName_DS" -Name $RT_DS_DB_TableName
         $RT_DS_DMZ_BS = Get-azurermroutetable -ResourceGroupName "RG-DS-SEC-BS-001" -Name $RT_DS_DMZ_TableName
         
+        Write-Output " Iniciando alteração de rotas em Services Datasul"
         # Alteração de Rotas na RT-DS-APP-BS
         Set-AzureRmRouteConfig -RouteTable $RT_DS_APP_BS -Name $RT_Internet -AddressPrefix $RT_AddressPrefix_Internet -NextHopType VirtualAppliance -NextHopIpAddress $Firewall | Set-AzureRmRouteTable
         Set-AzureRmRouteConfig -RouteTable $RT_DS_APP_BS -Name $RT_TRAFFIC_TO_DS_DB -AddressPrefix $RT_PREFIX_TRAFFIC_TO_DS_DB -NextHopType VirtualAppliance -NextHopIpAddress $Firewall | Set-AzureRmRouteTable
@@ -115,7 +116,9 @@ $cred = "AzureRunAsConnection"
         Set-AzureRmRouteConfig -RouteTable $RT_DS_DMZ_BS -Name $RT_TRAFFIC_TO_IB_DB -AddressPrefix $RT_PREFIX_TRAFFIC_TO_IB_DB -NextHopType VirtualAppliance -NextHopIpAddress $Firewall | Set-AzureRmRouteTable
         Set-AzureRmRouteConfig -RouteTable $RT_DS_DMZ_BS -Name $RT_TRAFFIC_TO_SC_APP -AddressPrefix $RT_PREFIX_TRAFFIC_TO_SC_APP -NextHopType VirtualAppliance -NextHopIpAddress $Firewall | Set-AzureRmRouteTable
         Set-AzureRmRouteConfig -RouteTable $RT_DS_DMZ_BS -Name $RT_TRAFFIC_TO_SC_DB -AddressPrefix $RT_PREFIX_TRAFFIC_TO_SC_DB -NextHopType VirtualAppliance -NextHopIpAddress $Firewall | Set-AzureRmRouteTable
-
+        
+        Write-Output "Finalizando alteração de UDRs Services Datasul"
+        
         # Seleciona a assinatura Infra-Base
       $Subs = Get-AzureRmSubscription -TenantId $TenantID
       Write-Output "Subs: $Subs"
@@ -134,12 +137,14 @@ $cred = "AzureRunAsConnection"
 
 }
         
-             
+           
         # Tabela de Rotas SERVICES-INFRA-BASE
         $RT_IB_APP_BS = Get-azurermroutetable -ResourceGroupName "$ResourceGroupName_IB" -Name $RT_IB_APP_TableName
         $RT_IB_BKP_BS = Get-azurermroutetable -ResourceGroupName "$ResourceGroupName_IB" -Name $RT_IB_BKP_TableName
         $RT_IB_DB_BS = Get-azurermroutetable -ResourceGroupName "$ResourceGroupName_IB" -Name $RT_IB_DB_TableName
         #
+        
+        Write-Output "Iniciando alteração de UDR Infra-Base"
         # Alteração de Rotas na RT-IB-APP-BS
         Set-AzureRmRouteConfig -RouteTable $RT_IB_APP_BS -Name $RT_Internet -AddressPrefix $RT_AddressPrefix_Internet -NextHopType VirtualAppliance -NextHopIpAddress $Firewall | Set-AzureRmRouteTable 
         Set-AzureRmRouteConfig -RouteTable $RT_IB_APP_BS -Name $RT_TRAFFIC_TO_DS_APP -AddressPrefix $RT_PREFIX_TRAFFIC_TO_DS_APP -NextHopType VirtualAppliance -NextHopIpAddress $Firewall | Set-AzureRmRouteTable
@@ -160,18 +165,21 @@ $cred = "AzureRunAsConnection"
         Set-AzureRmRouteConfig -RouteTable $RT_IB_DB_BS -Name $RT_TRAFFIC_TO_IB_APP -AddressPrefix $RT_PREFIX_TRAFFIC_TO_IB_APP -NextHopType VirtualAppliance -NextHopIpAddress $Firewall | Set-AzureRmRouteTable
         Set-AzureRmRouteConfig -RouteTable $RT_IB_DB_BS -Name $RT_TRAFFIC_TO_SC_APP -AddressPrefix $RT_PREFIX_TRAFFIC_TO_SC_APP -NextHopType VirtualAppliance -NextHopIpAddress $Firewall | Set-AzureRmRouteTable
         Set-AzureRmRouteConfig -RouteTable $RT_IB_DB_BS -Name $RT_TRAFFIC_TO_SC_DB -AddressPrefix $RT_PREFIX_TRAFFIC_TO_SC_DB -NextHopType VirtualAppliance -NextHopIpAddress $Firewall | Set-AzureRmRouteTable -Verbose
+        
+        Write-Output "Finalizando alteração UDRs Infra Base"
         ########################################################################################################################
         ########################################################################################################################
         #
-
+        
         # Seleciona a assinatura Infra Base
-        Write-Output " Select Subscription Infra Base"
+        Write-Output " Select Subscription Shared Client"
 	    Select-AzureRmSubscription -SubscriptionId "982e5b48-49c6-465a-a551-bf8726c7e5af"
-
+        
         # Tabela de Rotas SHARED CLIENT
         $RT_SC_APP_BS = Get-azurermroutetable -ResourceGroupName "$ResourceGroupName_SC" -Name $RT_SC_APP_TableName
         $RT_SC_DB_BS = Get-azurermroutetable -ResourceGroupName "$ResourceGroupName_SC" -Name $RT_SC_DB_TableName
         #
+        Write-Output "Iniciando alteração de UDRs Shared Client"
         # Alteração de Rotas na RT-SC-APP-BS
         Set-AzureRmRouteConfig -RouteTable $RT_SC_APP_BS -Name $RT_Internet -AddressPrefix $RT_AddressPrefix_Internet -NextHopType VirtualAppliance -NextHopIpAddress $Firewall | Set-AzureRmRouteTable
         Set-AzureRmRouteConfig -RouteTable $RT_SC_APP_BS -Name $RT_TRAFFIC_TO_DS_APP -AddressPrefix $RT_PREFIX_TRAFFIC_TO_DS_APP -NextHopType VirtualAppliance -NextHopIpAddress $Firewall | Set-AzureRmRouteTable
@@ -189,6 +197,8 @@ $cred = "AzureRunAsConnection"
         Set-AzureRmRouteConfig -RouteTable $RT_SC_DB_BS -Name $RT_TRAFFIC_TO_IB_APP -AddressPrefix $RT_PREFIX_TRAFFIC_TO_IB_APP -NextHopType VirtualAppliance -NextHopIpAddress $Firewall | Set-AzureRmRouteTable
         Set-AzureRmRouteConfig -RouteTable $RT_SC_DB_BS -Name $RT_TRAFFIC_TO_IB_DB -AddressPrefix $RT_PREFIX_TRAFFIC_TO_IB_DB -NextHopType VirtualAppliance -NextHopIpAddress $Firewall | Set-AzureRmRouteTable
         Set-AzureRmRouteConfig -RouteTable $RT_SC_DB_BS -Name $RT_TRAFFIC_TO_SC_APP -AddressPrefix $RT_PREFIX_TRAFFIC_TO_SC_APP -NextHopType VirtualAppliance -NextHopIpAddress $Firewall | Set-AzureRmRouteTable
+        
+        Write-Output "Finalizando alteração de UDRs Shared Client"
         #########################################################################################################################
         #########################################################################################################################
         #
